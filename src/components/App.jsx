@@ -1,16 +1,22 @@
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
-  );
-};
+import { Component } from 'react';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'https://pixabay.com/api/';
+axios.defaults.headers.common['x-api-key'] = process.env.REACT_APP_API_KEY;
+
+export class App extends Component {
+  state = {
+    images: [],
+  };
+
+  async componentDidMount() {
+    try {
+      const response = await axios.get('/images');
+      this.setState({ images: response.data });
+    } catch (error) {}
+  }
+
+  render() {
+    return <></>;
+  }
+}
