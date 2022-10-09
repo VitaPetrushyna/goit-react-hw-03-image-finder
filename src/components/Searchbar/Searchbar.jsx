@@ -1,11 +1,12 @@
 import styles from './Searchbar.module.css';
+import { ReactComponent as SearchIcon } from '../../icons/search.svg';
 
 const Searchbar = ({ onSubmit }) => {
   return (
     <header className={styles.searchBar}>
       <form className={styles.searchForm} onSubmit={onSubmit}>
         <button type="submit" className={styles.searchFormButton}>
-          <span className={styles.searchFormButtonLabel}>Search</span>
+          <SearchIcon className={styles.searchIcon} />
         </button>
 
         <input
