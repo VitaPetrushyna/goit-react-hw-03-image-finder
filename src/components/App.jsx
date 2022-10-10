@@ -1,16 +1,13 @@
 import { Component } from 'react';
 import styles from './App.styles.css';
-import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
-// import Modal from './Modal/Modal';
-// import fetchImages from '../ApiRequest/ApiRequest';
-
-const BASE_URL = 'https://pixabay.com/api/';
-const API_KEY = '29504531-9bab283f8cb4291b644273701';
+import Modal from './Modal/Modal';
+import { getImages } from '../ApiRequest/ApiRequest';
 
 export class App extends Component {
   state = {
@@ -19,7 +16,38 @@ export class App extends Component {
     images: [],
     loading: false,
     error: null,
+    showModal: false,
+    modalImgProps: { url: '', alt: '' },
   };
+
+  async componentDidUpdate(_, prevState) {
+    if (this.state.query.trim() === '') {
+      toast('What to show you?', {
+        icon: '👏',
+      });
+
+      return;
+    }
+
+    if (
+      prevState.page !== this.state.page ||
+      prevState.query !== this.state.query
+    ) {
+      this.setState({ loading: true, images: [] });
+
+      try {
+        const images = await getImages(this.state.query, this.state.page);
+        this.setState({ images });
+      } catch (error) {
+        toast.error('Something went wrong :(');
+        // this.setState({
+        //   error: 'Something went wrong :(',
+        // });
+      } finally {
+        this.setState({ loading: false });
+      }
+    }
+  }
 
   handleSubmit = event => {
     event.preventDefault();
@@ -36,52 +64,38 @@ export class App extends Component {
   loadMore = () => {
     this.setState(prevState => ({
       page: prevState.page + 1,
-      images: [...prevState.images, ...this.state.images],
     }));
   };
 
-  async componentDidUpdate(_, prevState) {
-    if (this.state.query.trim() === '') {
-      alert('What to show you?');
-      return;
-    }
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+  };
 
-    if (
-      prevState.page !== this.state.page ||
-      prevState.query !== this.state.query
-    ) {
-      this.setState({ loading: true, images: [] });
-
-      try {
-        const response = await axios.get(
-          `${BASE_URL}?q=${this.state.query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-        );
-        this.setState({ images: response.data.hits });
-        console.log(this.state.images);
-      } catch (error) {
-        this.setState({
-          error: 'Sorry, something went wrong. Please try again.',
-        });
-      } finally {
-        this.setState({ loading: false });
-      }
-    }
-  }
+  handleImgClick = ({ largeImageURL: url, tags: alt }) => {
+    this.setState({ modalImgProps: { url, alt } });
+    this.toggleModal();
+  };
 
   render() {
-    const { loading, error, images } = this.state;
+    const {
+      loading,
+      error,
+      images,
+      showModal,
+      modalImgProps: { url, alt },
+    } = this.state;
+
     return (
       <div className={styles.app}>
-        {error && (
-          <div>
-            <p>Sorry, something went wrong. Please try again. </p>
-          </div>
-        )}
         <Searchbar onSubmit={this.handleSubmit} />
+        {error && <div style={{ color: 'red' }}>{error}</div>}
         {loading && <Loader />}
-        <ImageGallery images={images} />
-        <Button btnLoadMore={this.loadMore} />
-        {/* <Modal /> */}
+        {showModal && <Modal url={url} alt={alt} onClose={this.toggleModal} />}
+        <ImageGallery images={images} openModal={this.handleImgClick} />
+        {images.length !== 0 && <Button btnLoadMore={this.loadMore} />}
+        <Toaster position="top-left" />
       </div>
     );
   }
