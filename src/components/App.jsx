@@ -17,27 +17,31 @@ export class App extends Component {
     loading: false,
     error: null,
     showModal: false,
+
     modalImgProps: { url: '', alt: '' },
   };
 
   async componentDidUpdate(_, prevState) {
-    if (this.state.query.trim() === '') {
+    const { page, query } = this.state;
+    if (query.trim() === '') {
       toast('What to show you?', {
         icon: '👏',
       });
-
       return;
     }
 
-    if (
-      prevState.page !== this.state.page ||
-      prevState.query !== this.state.query
-    ) {
+    if (prevState.page !== page || prevState.query !== query) {
       this.setState({ loading: true, images: [] });
 
       try {
-        const images = await getImages(this.state.query, this.state.page);
+        const images = await getImages(query, page);
         this.setState({ images });
+
+        if (images.length === 0) {
+          toast.error(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+        }
       } catch (error) {
         toast.error('Something went wrong :(');
         // this.setState({
@@ -84,6 +88,7 @@ export class App extends Component {
       error,
       images,
       showModal,
+
       modalImgProps: { url, alt },
     } = this.state;
 
