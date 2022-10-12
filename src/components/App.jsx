@@ -23,6 +23,10 @@ export class App extends Component {
 
   async componentDidUpdate(_, prevState) {
     const { page, query } = this.state;
+
+    // const prevQuery = prevState.query;
+    // const newQuery = query;
+
     if (query.trim() === '') {
       toast('What to show you?', {
         icon: '👏',
@@ -33,9 +37,15 @@ export class App extends Component {
     if (prevState.page !== page || prevState.query !== query) {
       this.setState({ loading: true, images: [] });
 
+      // if (prevState.query !== this.query) {
+      //   this.setState({ images: [], page: 1 });
+      // }
+
       try {
         const images = await getImages(query, page);
-        this.setState({ images });
+        this.setState(prevState => ({
+          images: [...prevState.images, ...images.hits],
+        }));
 
         if (images.length === 0) {
           toast.error(
@@ -62,7 +72,7 @@ export class App extends Component {
       images: [],
     });
 
-    event.target.reset();
+    // event.target.reset();
   };
 
   loadMore = () => {
