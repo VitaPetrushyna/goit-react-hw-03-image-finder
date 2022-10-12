@@ -9,6 +9,13 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import { getImages } from '../ApiRequest/ApiRequest';
 
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+};
+
 export class App extends Component {
   state = {
     page: 1,
@@ -17,15 +24,13 @@ export class App extends Component {
     loading: false,
     error: null,
     showModal: false,
-
+    // totalHits: 0,
     modalImgProps: { url: '', alt: '' },
+    status: Status.IDLE,
   };
 
   async componentDidUpdate(_, prevState) {
     const { page, query } = this.state;
-
-    // const prevQuery = prevState.query;
-    // const newQuery = query;
 
     if (query.trim() === '') {
       toast('What to show you?', {
@@ -35,19 +40,21 @@ export class App extends Component {
     }
 
     if (prevState.page !== page || prevState.query !== query) {
-      this.setState({ loading: true, images: [] });
-
-      // if (prevState.query !== this.query) {
-      //   this.setState({ images: [], page: 1 });
-      // }
+      this.setState({ loading: true });
 
       try {
-        const images = await getImages(query, page);
+        const fetchImages = await getImages(query, page);
+
         this.setState(prevState => ({
-          images: [...prevState.images, ...images.hits],
+          images: [...prevState.images, ...fetchImages.hits],
+          totalHits: fetchImages.totalHits,
         }));
 
-        if (images.length === 0) {
+        // if (page * 12 > totalHits) {
+        //   toast.warn('Sorry, this is the last page...');
+        // }
+
+        if (fetchImages.length === 0) {
           toast.error(
             'Sorry, there are no images matching your search query. Please try again.'
           );
