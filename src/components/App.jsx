@@ -24,7 +24,7 @@ export class App extends Component {
     loading: false,
     error: null,
     showModal: false,
-    // totalHits: 0,
+    totalHits: 0,
     modalImgProps: { url: '', alt: '' },
     status: Status.IDLE,
   };
@@ -50,15 +50,15 @@ export class App extends Component {
           totalHits: fetchImages.totalHits,
         }));
 
-        // if (page * 12 > totalHits) {
-        //   toast.warn('Sorry, this is the last page...');
-        // }
-
-        if (fetchImages.length === 0) {
+        if (fetchImages.hits.length === 0) {
           toast.error(
             'Sorry, there are no images matching your search query. Please try again.'
           );
         }
+
+        // if (page * 12 > this.state.totalHits) {
+        //   toast.warn('Sorry, this is the last page...');
+        // }
       } catch (error) {
         toast.error('Something went wrong :(');
         // this.setState({
