@@ -73,11 +73,17 @@ export class App extends Component {
   handleSubmit = event => {
     event.preventDefault();
 
-    this.setState({
-      page: 1,
-      query: event.target.elements.query.value,
-      images: [],
-    });
+    if (event.target.elements.query.value !== this.state.query) {
+      this.setState({
+        page: 1,
+        query: event.target.elements.query.value,
+        images: [],
+      });
+    } else {
+      toast('What to show you?', {
+        icon: '👏',
+      });
+    }
 
     // event.target.reset();
   };
